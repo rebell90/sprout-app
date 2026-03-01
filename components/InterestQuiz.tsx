@@ -24,18 +24,21 @@ export default function InterestQuiz({ onComplete }: InterestQuizProps) {
   const [showPowers, setShowPowers] = useState<number[]>([]);
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // Pre-generate star data once so server and client values match (fixes hydration warning)
-  const [stars] = useState<Star[]>(() =>
-    [...Array(40)].map((_, i) => ({
-      id: i,
-      width: Math.random() * 3 + 1,
-      top: Math.random() * 100,
-      left: Math.random() * 100,
-      opacity: Math.random() * 0.7 + 0.1,
-      duration: Math.random() * 3 + 2,
-      delay: Math.random() * 3,
-    }))
-  );
+  // Generate stars only on the client to avoid SSR/client Math.random() mismatch
+  const [stars, setStars] = useState<Star[]>([]);
+  useEffect(() => {
+    setStars(
+      [...Array(40)].map((_, i) => ({
+        id: i,
+        width: Math.random() * 3 + 1,
+        top: Math.random() * 100,
+        left: Math.random() * 100,
+        opacity: Math.random() * 0.7 + 0.1,
+        duration: Math.random() * 3 + 2,
+        delay: Math.random() * 3,
+      }))
+    );
+  }, []);
 
   const totalSteps = 4;
   const progress = step === 0 ? 0 : step >= 5 ? 100 : ((step - 1) / totalSteps) * 100;

@@ -22,7 +22,7 @@ export interface QuizResult {
 }
 
 export interface InterestQuizProps {
-  onComplete?: (result: QuizResult) => void;
+  onComplete?: (result: QuizResult) => void | Promise<void>;
 }
 
 // ============================================================
