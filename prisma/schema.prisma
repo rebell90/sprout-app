@@ -1,0 +1,104 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  role      String   @default("parent")
+  createdAt DateTime @default(now())
+  
+  childProfiles     ChildProfile[]
+  interestProfile   UserInterestProfile?
+  learningPaths     LearningPath[]
+  progress          UserProgress[]
+}
+
+model ChildProfile {
+  id           String   @id @default(uuid())
+  parentUserId String
+  parent       User     @relation(fields: [parentUserId], references: [id])
+  name         String
+  birthYear    Int
+  avatarUrl    String?
+  currentTheme String   @default("space")
+  createdAt    DateTime @default(now())
+}
+
+model UserInterestProfile {
+  id               String   @id @default(uuid())
+  userId           String   @unique
+  user             User     @relation(fields: [userId], references: [id])
+  interests        Json
+  learningStyle    String?
+  timePerWeekHrs   Int?
+  goals            String[]
+  archetypeTitle   String?
+  lastAssessedAt   DateTime @default(now())
+}
+
+model Resource {
+  id              String   @id @default(uuid())
+  title           String
+  url             String
+  platform        String
+  costType        String
+  costUsd         Decimal?
+  format          String
+  difficulty      Int
+  minAge          Int?
+  maxAge          Int?
+  estHours        Decimal?
+  skillTags       String[]
+  interestTags    String[]
+  affiliateEnabled Boolean @default(false)
+  ratingAvg       Decimal?
+  createdAt       DateTime @default(now())
+  
+  progress        UserProgress[]
+}
+
+model LearningPath {
+  id               String   @id @default(uuid())
+  userId           String
+  user             User     @relation(fields: [userId], references: [id])
+  title            String
+  goalDescription  String?
+  generatedPath    Json
+  status           String   @default("active")
+  aiModelVersion   String?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  progress         UserProgress[]
+  milestones       Milestone[]
+}
+
+model UserProgress {
+  id          String    @id @default(uuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id])
+  pathId      String
+  path        LearningPath @relation(fields: [pathId], references: [id])
+  resourceId  String
+  resource    Resource  @relation(fields: [resourceId], references: [id])
+  status      String    @default("not_started")
+  rating      Int?
+  notes       String?
+  completedAt DateTime?
+}
+
+model Milestone {
+  id        String   @id @default(uuid())
+  userId    String
+  pathId    String
+  path      LearningPath @relation(fields: [pathId], references: [id])
+  title     String
+  badgeIcon String?
+  earnedAt  DateTime @default(now())
+}
